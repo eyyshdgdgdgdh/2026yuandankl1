@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science鸡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            cursor: pointer;
+        }
+
+        /* 信封主体 */
+        .envelope {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f5dc 0%, #deb887 100%);
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 信封背面 */
+        .envelope-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #d4c4a8 0%, #c4a882 100%);
+            border-radius: 8px;
+            z-index: 1;
+        }
+
+        /* 信封前盖 */
+        .envelope-flap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f5dc 0%, #deb887 100%);
+            clip-path: polygon(0 0, 50% 40%, 100% 0);
+            transform-origin: top;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 3;
+        }
+
+        /* 信封正面 */
+        .envelope-front {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f5dc 0%, #deb887 100%);
+            clip-path: polygon(0 0, 50% 40%, 100% 0, 100% 100%, 0 100%);
+            z-index: 2;
+        }
+
+        /* 信件 */
+        .letter {
+            position: absolute;
+            width: 85%;
+            height: 90%;
+            left: 7.5%;
+            top: 5%;
+            background: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                        opacity 0.5s ease;
+            z-index: 0;
+            opacity: 0;
+            transform: translateY(0);
+            overflow: hidden;
+        }
+
+        .letter-content {
+            width: 100%;
+            overflow-y: auto;
+            max-height: 100%;
+            padding-right: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: #e91e63 #f0f0f0;
+        }
+
+        .letter-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .letter-content::-webkit-scrollbar-track {
+            background: #f0f0f0;
+        }
+
+        .letter-content::-webkit-scrollbar-thumb {
+            background: #e91e63;
+            border-radius: 2px;
+        }
+
+        .letter h2 {
+            color: #e91e63;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .letter p {
+            color: #333;
+            font-size: 0.75em;
+            line-height: 1.3;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        .letter .heart {
+            color: #e91e63;
+            font-size: 2em;
+            animation: heartbeat 1s ease-in-out infinite;
+        }
+
+        /* 打开状态 */
+        .container.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .container.open .letter {
+            transform: translateY(-180px);
+            opacity: 1;
+            z-index: 4;
+        }
+
+        .container.open .letter-content {
+            cursor: grab;
+        }
+
+        .container.open .letter-content:active {
+            cursor: grabbing;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* 点击提示 */
+        .hint {
+            position: fixed;
+            bottom: 50px;
+            color: white;
+            font-size: 1.2em;
+            animation: fadeInOut 2s ease-in-out infinite;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* 装饰性星星 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* 响应式 */
+        @media (max-width: 450px) {
+            .container {
+                width: 340px;
+                height: 280px;
+            }
+
+            .letter h2 {
+                font-size: 1.3em;
+            }
+
+            .letter p {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+        <div class="container" id="envelope">
+        <div class="envelope-back"></div>
+        <div class="letter">
+            <div class="letter-content" id="letterContent">
+                <h2>嗨！你好</h2>
+                <p>不知该从何说起好</p>
+                <p>那天我遇见了你</p>
+                <p>微笑时你的两颗小尖牙，很可爱。</p>
+                <p>你的侧脸，很温柔，都说女人是水做的，那你一定是夏季深山里的泉水，清澈见底，让人着迷</p>
+                <p>当你说我可爱时，说实话我有点不知所措。</p>
+                <p>还记得，我在办公室里问你你喜欢的类型，你说你喜欢有缘的。</p>
+                <p>那一秒我多么的希望我能够有缘。</p>
+                <p>你说过你没怎么谈过恋爱，十分单纯。</p>
+                <p>你单纯的样子真的很可爱。</p>
+                <p>我听说，你应为晚自习，没有说过我，在寝室里骂我半天，在此我向你道歉</p>
+                <p>或许，这封信抵不过他的千纸鹤，应该是我没有他的柔情罢了。</p>
+                <p>你也许无法理解我以这种方式表达我想说的。</p>
+                <p>没关系，无论我无法入你的心，但我们可以做好朋友呀！</p>
+                <p>或许这封信没有过多的文字，但以及是我对你所想说的大概。</p>
+                <p>如果你想，我可以为你写一万字封。</p>
+                <p>无论你是否愿意，请你一定要给这条朋友圈点赞！（不用担心，仅你可见董骐莹）</p>
+                <div class="heart">❤️</div>
+            </div>
+        </div>
+        <div class="envelope-front"></div>
+        <div class="envelope-flap"></div>
+    </div>
+    
+    <div class="hint" id="hint">点击信封打开 </div>
+
+    <script>
+        // 创建星星背景
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 信封交互
+        const envelope = document.getElementById('envelope');
+        const hint = document.getElementById('hint');
+        const letterContent = document.getElementById('letterContent');
+        let isOpen = false;
+        let isDragging = false;
+        let startY = 0;
+        let scrollTop = 0;
+
+        envelope.addEventListener('click', function(e) {
+            // 如果正在滑动内容，不触发信封开关
+            if (isDragging) return;
+            isOpen = !isOpen;
+            this.classList.toggle('open');
+            hint.textContent = isOpen ? '再点击关闭信封' : '点击信封打开 💕';
+        });
+
+        // 触摸滑动功能
+        letterContent.addEventListener('touchstart', function(e) {
+            isDragging = false;
+            startY = e.touches[0].clientY;
+            scrollTop = this.scrollTop;
+        }, { passive: true });
+
+        letterContent.addEventListener('touchmove', function(e) {
+            const currentY = e.touches[0].clientY;
+            const diffY = startY - currentY;
+            
+            // 只有明显的滑动才标记为拖拽
+            if (Math.abs(diffY) > 10) {
+                isDragging = true;
+            }
+        }, { passive: true });
+
+        letterContent.addEventListener('touchend', function() {
+            setTimeout(() => {
+                isDragging = false;
+            }, 100);
+        });
+
+        // 鼠标滚动功能
+        letterContent.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            this.scrollTop += e.deltaY;
+        }, { passive: false });
+
+        // 鼠标拖拽功能
+        let mouseStartY = 0;
+        let mouseScrollTop = 0;
+
+        letterContent.addEventListener('mousedown', function(e) {
+            isDragging = false;
+            mouseStartY = e.clientY;
+            mouseScrollTop = this.scrollTop;
+            this.style.cursor = 'grabbing';
+        });
+
+        letterContent.addEventListener('mousemove', function(e) {
+            if (e.buttons !== 1) return;
+            const diffY = mouseStartY - e.clientY;
+            this.scrollTop = mouseScrollTop + diffY;
+            
+            if (Math.abs(diffY) > 10) {
+                isDragging = true;
+            }
+        });
+
+        letterContent.addEventListener('mouseup', function() {
+            this.style.cursor = 'grab';
+            setTimeout(() => {
+                isDragging = false;
+            }, 100);
+        });
+
+        letterContent.addEventListener('mouseleave', function() {
+            this.style.cursor = 'grab';
+            isDragging = false;
+        });
+
+        // 初始化
+        createStars();
+    </script>
+
+</body>
+</html>
